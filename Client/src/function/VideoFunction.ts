@@ -68,7 +68,7 @@ export function WebSocketHandle(socket: WebSocket, user: Store<"user", _UnwrapAl
   }
 }
 
-export function getMessageClient(msg: WebSocketMessage, videoRef: Ref, HlsRef: Ref, tips: Ref<Array<string>>, url: Ref<string>) {
+export function getMessageClient(msg: WebSocketMessage, videoRef: Ref, HlsRef: Ref, tips: Ref<Array<string>>, filePath: Ref<string>) {
   const data = JSON.parse(msg.data)
   let src:string
   tips.value.push(data.tips)
@@ -78,7 +78,7 @@ export function getMessageClient(msg: WebSocketMessage, videoRef: Ref, HlsRef: R
     if (isNullOrUndefined(videoRef)) {
       return false
     }
-    if (url.value === data.url) {
+    if (filePath.value === data.filePath) {
       if (videoRef.value.currentTime != data.time) {
         videoRef.value.currentTime = data.time
         videoRef.value.play()
@@ -91,9 +91,9 @@ export function getMessageClient(msg: WebSocketMessage, videoRef: Ref, HlsRef: R
         console.log("isPause播放")
       }
     } else {
-      if (data.url != "") {
-        url.value = data.url
-        src= baseVideoUrl + data.url
+      if (data.filePath != "") {
+        filePath.value = data.filePath
+        src= baseVideoUrl + data.filePath
         changeVideo(src, videoRef, HlsRef)
         console.log("src:" + src)
         videoRef.value.currentTime = data.time

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <span class="span">当前集数为{{ url }}</span>
+        <span class="span">当前集数为{{ filePath }}</span>
     </div>
 
     <div>
@@ -16,11 +16,11 @@
         </div>
 
         <div class="div_select">
-            <select id="ldir" ref="ldir" class="select1" @change="fdirChange">
-                <option v-for="index in option1" :value="index.url" :key="index.url">{{ index.url }}</option>
+            <select id="ldir" ref="dirList" class="select1" @change="videoChange">
+                <option v-for="index in dirOption" :value="index.filePath" :key="index.filePath">{{ index.filePath }}</option>
             </select>
-            <select id="sdir" ref="sdir" class="select2">
-                <option v-for="index in option" :value="index.url" :key="index.url">{{ index.url }}</option>
+            <select id="sdir" ref="fileList" class="select2">
+                <option v-for="index in fileOption" :value="index.filePath" :key="index.filePath">{{ index.filePath }}</option>
             </select>
             <button class="button_change" @click="change">选集</button>
         </div>
@@ -39,27 +39,30 @@
 import { onMounted, ref } from "vue";
 import { useUserStore } from "@/stores/userStore";
 import axios from "axios";
-import { createdPlayer, getMessageHost, WebSocketHandle } from "@/function/VideoFunction"
+import { createdPlayer, getMessageHost, WebSocketHandle, isNullOrUndefined, baseVideoUrl } from "@/function/VideoFunction"
 import type { WebSocketMessage } from "@/function/VideoFunction"
 
-const url = ref("")
+const user = useUserStore()
+
+const filePath = ref("")
+const videoSrc = ref("")
 const videoRef = ref()
+const HlsRef = ref()
 const tips = ref<Array<string>>([])
 const isLive = ref(false)
-const user = useUserStore()
 const isPause = ref(false)
-const fdir = ref("")
-const ldir = ref()
-const sdir = ref()
+const currentFile = ref("")
+const dirList = ref()
+const fileList = ref()
 var socket:WebSocket
-const option = ref([
+const fileOption = ref([
     {
-        url: "mv2.mp4"
+        filePath: "mv2.mp4"
     }
 ])
-const option1 = ref([
+const dirOption = ref([
     {
-        url: ""
+        filePath: ""
     }
 ])
 const play = () => {
@@ -71,34 +74,29 @@ const pause = () => {
     send()
 }
 const end = () => {
-    var index = sdir.value.selectedIndex;
-    sdir.value.selectedIndex += 1
-    if (fdir.value != "") {
-        url.value = fdir.value + '/' + option.value[index + 1].url
+    var index = fileList.value.selectedIndex;
+    fileList.value.selectedIndex += 1
+    if (currentFile.value != "") {
+        filePath.value = currentFile.value + '/' + fileOption.value[index + 1].filePath
     } else {
-        url.value = option.value[index + 1].url
+        filePath.value = fileOption.value[index + 1].filePath
     }
-    src.value = baseVideoUrl + url.value
+    videoSrc.value = baseVideoUrl + filePath.value
     send()
 }
 const change = () => {
-    if (fdir.value != "") {
-        url.value = fdir.value + '/' + sdir.value.value
+    if (currentFile.value != "") {
+        filePath.value = currentFile.value + '/' + fileList.value.value
     } else {
-        url.value = sdir.value.value
+        filePath.value = fileList.value.value
     }
 }
-const baseVideoUrl = "http://139.9.32.27/src/video/"
-const baseLiveUrl = "http://139.9.32.27/live?port=1935&app=live&stream=video"
+
 
 const load = () => {
-    if (isLive.value) {
-        createdPlayer(videoSrc, videoRef, HlsRef)
-    } else {
-        tips.value.push("\n当前播放视频为：" + url.value)
-        src.value = baseVideoUrl + url.value
-        console.log("src:" + src.value)
-    }
+        tips.value.push("\n当前播放视频为：" + filePath.value)
+        videoSrc.value = baseVideoUrl + filePath.value
+        createdPlayer(videoSrc.value, videoRef, HlsRef)
 }
 
 const init = ()=>{
@@ -118,7 +116,7 @@ const onMessage = (msg: any) => {
 const send = () => {
     tips.value.push("\n房间已同步")
     let Video = videoRef.value
-    let message = { url: url.value, time: Video.currentTime, isLive: isLive.value, tips: tips.value, isPause: isPause.value }
+    let message = { filePath: filePath.value, time: Video.currentTime, isLive: isLive.value, tips: tips.value, isPause: isPause.value }
     socket.send(JSON.stringify(message))
 }
 const onClose = () => {
@@ -126,36 +124,36 @@ const onClose = () => {
     tips.value.push('\n连接断开了')
 }
 
-const fdirChange = () => {
-    fdir.value = ldir.value.value
-    getDir(fdir.value)
+const videoChange = () => {
+    currentFile.value = dirList.value.value
+    getDir(currentFile.value)
 }
 
 const getDir = (dir: string) => {
-    if (dir != "") {
-        axios.get("/sdir/" + dir).then((respon) => {
-            console.log(respon.data)
-            option.value = respon.data
+    if ((dir != "")) {
+        axios.get(`/getFileList/${dir}`).then((respon) => {
+            console.log(respon.data.data)
+            fileOption.value = respon.data.data
         }).catch(error => {
             console.log(error)
         })
     } else {
-        axios.get("/sdir").then((respon) => {
-            console.log(respon.data)
-            option.value = respon.data
+        axios.get("/getFileList").then((respon) => {
+            console.log(respon.data.data)
+            fileOption.value = respon.data.data
         }).catch(error => {
             console.log(error)
         })
     }
 }
 const listDir = () => {
-    axios.get("/ldir").then((respon) => {
-        console.log(respon.data)
-        respon.data.forEach(item => option1.value.push(item))
+    axios.get("/getDir").then((respon) => {
+        console.log(respon.data.data)
+        respon.data.data.forEach(item => dirOption.value.push(item))
     }).catch(error => { console.log(error) })
-    var index = ldir.value.selectedIndex
-    fdir.value = option1.value[index].url
-    getDir(fdir.value)
+    var index = dirList.value.selectedIndex
+    currentFile.value = dirOption.value[index].filePath
+    getDir(currentFile.value)
 }
 onMounted(() => {
     // 初始化

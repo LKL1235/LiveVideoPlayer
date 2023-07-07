@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author websocket服务
+ * @description websocket服务
  */
 @jakarta.websocket.server.ServerEndpoint(value = "/ws/{roomId}/{username}")
 @Component
@@ -73,7 +73,7 @@ public class WebSocketServer {
     public void onMessage(String message, Session session,@PathParam("roomId") Integer roomId, @PathParam("username") String username) {
         log.info("服务端收到用户username={}的消息:{}", username, message);
         JSONObject obj = JSONUtil.parseObj(message);
-        String url = obj.getStr("url"); // to表示发送给哪个用户，比如 admin
+        String filePath = obj.getStr("filePath"); // to表示发送给哪个用户，比如 admin
         String time = obj.getStr("time"); // 发送的消息文本  hello
         boolean isLive=(boolean)obj.get("isLive");
         String tips=obj.getStr("tips");
@@ -87,7 +87,7 @@ public class WebSocketServer {
             // 服务器端 再把消息组装一下，组装后的消息包含发送人和发送的文本内容
             // {"from": "zhang", "text": "hello"}
             JSONObject jsonObject = new JSONObject();
-            jsonObject.set("url", url);  // from 是 zhang
+            jsonObject.set("filePath", filePath);  // from 是 zhang
             jsonObject.set("time", time);  // text 同上面的text
             jsonObject.set("isLive",isLive);
             jsonObject.set("tips",tips);

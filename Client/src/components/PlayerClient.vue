@@ -1,6 +1,6 @@
 <template>
   <div>
-    <span class="span">当前集数为{{ url }}</span>
+    <span class="span">当前集数为{{ filePath }}</span>
   </div>
   <div>
     <video autoplay ref="videoRef" style="margin-top: 5%" height="300" id="myVideo"></video>
@@ -20,7 +20,7 @@ import type{WebSocketMessage} from "@/function/VideoFunction"
 const user = useUserStore()
 
 let socket: WebSocket
-const url = ref("")
+const filePath = ref("")
 const src = ref("")
 const tips = ref<Array<string>>([])
 const isLive = ref(false)
@@ -60,8 +60,8 @@ const onError = () => {
 }
 
 const onMessage = (msg: WebSocketMessage) => {
-  // getMessage(msg: WebSocketMessage, videoRef: Ref<any>, HlsRef: Ref<any>, tips: Ref<string[]>, url: Ref<string>, src: Ref<any>)
-  getMessageClient(msg, videoRef, HlsRef, tips, url)
+  // getMessage(msg: WebSocketMessage, videoRef: Ref<any>, HlsRef: Ref<any>, tips: Ref<string[]>, filePath: Ref<string>, src: Ref<any>)
+  getMessageClient(msg, videoRef, HlsRef, tips, filePath)
 }
 
 const onClose = () => {
