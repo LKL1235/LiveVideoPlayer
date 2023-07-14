@@ -10,7 +10,7 @@ public class WebDriverOption {
     @Bean
     public ChromeOptions WebDriverOptions(){
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--auto-open-devtools-for-tabs");
+        // options.addArguments("--auto-open-devtools-for-tabs");
         return options;
     }
 }

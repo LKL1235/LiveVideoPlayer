@@ -1,37 +1,17 @@
 package io.livevideo.server.utils;
-import lombok.Data;
 
-/**
- * @description:
- * @author:LKL1235
- * @date:2022/11/24 19:03
- **/
+import java.util.HashMap;
+import java.util.Map;
 
-@Data
+
 public class myResult {
-    // 结果状态码
-    private Integer code;
-    // 结果消息
-    private String msg;
-    // 结果数据
-    private Object data;
 
-    public myResult(Integer code, String msg, Object data) {
-        this.code = code;
-        this.msg = msg;
-        this.data = data;
+    public static Map<String,Object> getResultAsMap(boolean result, String msg, Object data) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("result", result);
+        map.put("msg", msg);
+        map.put("data", data);
+        return map;
     }
 
-    public myResult(Integer code, String msg) {
-        this.code = code;
-        this.msg = msg;
-    }
-    @Override
-    public String toString() {
-        return "Result{" +
-                "code=" + this.code +
-                ", msg='" + this.msg + '\'' +
-                ", data=" + this.data +
-                '}';
-    }
 }
