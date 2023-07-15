@@ -43,8 +43,7 @@ router.beforeEach((to, from,next) => {
   }
   if(to.path === "/"|| to.path === "/main") {
     next()
-  }
-  if(store.roomId==0&&store.username==''){
+  }else if(store.roomId==0&&store.username==''){
     return next({ name: 'main' })
   }else {
     next()

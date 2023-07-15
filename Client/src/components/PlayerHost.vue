@@ -77,7 +77,7 @@ const end = () => {
     var index = fileList.value.selectedIndex;
     fileList.value.selectedIndex += 1
     if (currentFile.value != "") {
-        filePath.value = currentFile.value + '/' + fileOption.value[index + 1].filePath
+        filePath.value = `${currentFile.value}/${fileOption.value[index + 1].filePath}`
     } else {
         filePath.value = fileOption.value[index + 1].filePath
     }

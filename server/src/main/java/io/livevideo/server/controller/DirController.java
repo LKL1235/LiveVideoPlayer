@@ -2,7 +2,7 @@ package io.livevideo.server.controller;
 
 import io.livevideo.server.DTO.DirDTO;
 import io.livevideo.server.utils.ResultCode;
-import io.livevideo.server.utils.myHttpResult;
+import io.livevideo.server.utils.MyHttpResult;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +31,7 @@ public class DirController {
     @Autowired
     private DirDTO dirDTO;
     @RequestMapping("/getFileList")
-    public myHttpResult getFileList(@RequestParam("DirName") Optional<String> DirName){
+    public MyHttpResult getFileList(@RequestParam("DirName") Optional<String> DirName){
         // String path = "/src/video";
         // String path = "/src/video"+fdir;
         String path = filePath;
@@ -49,10 +49,10 @@ public class DirController {
                     list.add(dirDTO1);
                 }
             }
-            return new myHttpResult(ResultCode.SUCCESS.getCode(),ResultCode.SUCCESS.getMsg(),list);
+            return new MyHttpResult(ResultCode.SUCCESS.getCode(),ResultCode.SUCCESS.getMsg(),list);
         } catch (Exception e) {
             System.out.println(e);
-            return new myHttpResult(ResultCode.FAILURE.getCode(),"查询错误,请检查参数");
+            return new MyHttpResult(ResultCode.FAILURE.getCode(),"查询错误,请检查参数");
         }
 
     }
@@ -75,7 +75,7 @@ public class DirController {
     // }
 
     @RequestMapping("/getDir")
-    public myHttpResult getDir(){
+    public MyHttpResult getDir(){
         String path = filePath;		//要遍历的路径
         File file = new File(path);		//获取其file对象
         File[] fs = file.listFiles();	//遍历path下的文件和目录，放在File数组中
@@ -89,6 +89,6 @@ public class DirController {
                 System.out.println(s);
             }
         }
-        return new myHttpResult(ResultCode.SUCCESS.getCode(),ResultCode.SUCCESS.getMsg(),list);
+        return new MyHttpResult(ResultCode.SUCCESS.getCode(),ResultCode.SUCCESS.getMsg(),list);
     }
 }
