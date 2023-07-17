@@ -10,6 +10,8 @@
   ],
   "compilerOptions": {
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "types": ["element-plus/global"],
+
   }
 }

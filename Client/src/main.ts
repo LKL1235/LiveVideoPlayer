@@ -5,7 +5,10 @@ import axios from "axios";
 import VueAxios from "vue-axios";
 import App from './App.vue'
 import router from './router'
-import naive from 'naive-ui'
+
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import 'element-plus/theme-chalk/dark/css-vars.css'
 
 axios.defaults.baseURL='/api'
 axios.defaults.withCredentials = true
@@ -15,5 +18,5 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.use(VueAxios, axios)
-app.use(naive)
+app.use(ElementPlus)
 app.mount('#app')

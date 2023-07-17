@@ -2,7 +2,13 @@
     <div>
         <span class="span">当前集数为{{ filePath }}</span>
     </div>
-
+    <span style="font-size: 24px;margin-left: 5vw;margin-right: 4vw;">请输入要解析的网页</span>
+    <el-input v-model="inputUrl" 
+        placeholder="请输入视频路径" 
+        clearable
+        style="width: 50vw;margin-right: 2vw;"
+        ></el-input>
+    <el-button type="primary">Primary</el-button>
     <div>
         <video autoplay controls ref="videoRef" @pause="pause" @play="play" @ended="end" style="margin-top: 5%" height="300"
             id="myVideo"></video>
@@ -17,10 +23,12 @@
 
         <div class="div_select">
             <select id="ldir" ref="dirList" class="select1" @change="videoChange">
-                <option v-for="index in dirOption" :value="index.filePath" :key="index.filePath">{{ index.filePath }}</option>
+                <option v-for="index in dirOption" :value="index.filePath" :key="index.filePath">{{ index.filePath }}
+                </option>
             </select>
             <select id="sdir" ref="fileList" class="select2">
-                <option v-for="index in fileOption" :value="index.filePath" :key="index.filePath">{{ index.filePath }}</option>
+                <option v-for="index in fileOption" :value="index.filePath" :key="index.filePath">{{ index.filePath }}
+                </option>
             </select>
             <button class="button_change" @click="change">选集</button>
         </div>
@@ -44,17 +52,22 @@ import type { WebSocketMessage } from "@/function/VideoFunction"
 
 const user = useUserStore()
 
+// 组件绑定
+const inputUrl = ref("")
+const videoRef = ref()
+const tips = ref<Array<string>>([])
+// 视频地址
 const filePath = ref("")
 const videoSrc = ref("")
-const videoRef = ref()
+
 const HlsRef = ref()
-const tips = ref<Array<string>>([])
+// data
 const isLive = ref(false)
 const isPause = ref(false)
 const currentFile = ref("")
 const dirList = ref()
 const fileList = ref()
-var socket:WebSocket
+var socket: WebSocket
 const fileOption = ref([
     {
         filePath: "mv2.mp4"
@@ -65,6 +78,8 @@ const dirOption = ref([
         filePath: ""
     }
 ])
+
+// 视频控制
 const play = () => {
     isPause.value = false
     send()
@@ -84,6 +99,7 @@ const end = () => {
     videoSrc.value = baseVideoUrl + filePath.value
     send()
 }
+// 选择器改变
 const change = () => {
     if (currentFile.value != "") {
         filePath.value = currentFile.value + '/' + fileList.value.value
@@ -92,17 +108,17 @@ const change = () => {
     }
 }
 
-
+// 加载视频
 const load = () => {
-        tips.value.push("\n当前播放视频为：" + filePath.value)
-        videoSrc.value = baseVideoUrl + filePath.value
-        createdPlayer(videoSrc.value, videoRef, HlsRef)
+    tips.value.push("\n当前播放视频为：" + filePath.value)
+    videoSrc.value = baseVideoUrl + filePath.value
+    createdPlayer(videoSrc.value, videoRef, HlsRef)
 }
-
-const init = ()=>{
-  WebSocketHandle(socket, user, onOpen, onError, onMessage, onClose)
+// 初始化
+const init = () => {
+    WebSocketHandle(socket, user, onOpen, onError, onMessage, onClose)
 }
-
+// websocket方法
 const onOpen = () => {
     console.log("socket连接成功")
     tips.value.push("连接房间成功")
@@ -124,6 +140,7 @@ const onClose = () => {
     tips.value.push('\n连接断开了')
 }
 
+// 视频切换
 const videoChange = () => {
     currentFile.value = dirList.value.value
     getDir(currentFile.value)
