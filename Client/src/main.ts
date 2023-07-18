@@ -10,7 +10,7 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 
-axios.defaults.baseURL='/api'
+axios.defaults.baseURL = import.meta.env.VITE_BASE_API as string
 axios.defaults.withCredentials = true
 
 const app = createApp(App)

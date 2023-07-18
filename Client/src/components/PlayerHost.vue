@@ -8,7 +8,7 @@
         clearable
         style="width: 50vw;margin-right: 2vw;"
         ></el-input>
-    <el-button type="primary">Primary</el-button>
+    <el-button type="primary" :loading="parse_loading">解析</el-button>
     <div>
         <video autoplay controls ref="videoRef" @pause="pause" @play="play" @ended="end" style="margin-top: 5%" height="300"
             id="myVideo"></video>
@@ -54,6 +54,7 @@ const user = useUserStore()
 
 // 组件绑定
 const inputUrl = ref("")
+const parse_loading = ref(false)
 const videoRef = ref()
 const tips = ref<Array<string>>([])
 // 视频地址

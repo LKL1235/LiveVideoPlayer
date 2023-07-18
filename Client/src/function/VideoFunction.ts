@@ -2,8 +2,12 @@ import Hls from "hls.js";
 import type { Store, _UnwrapAll } from "pinia";
 import type { Ref } from 'vue'
 
-export const baseVideoUrl = "http://139.9.32.27/src/video/"
-export const baseLiveUrl = "http://139.9.32.27/live?port=1935&app=live&stream=video"
+
+
+export const baseVideoUrl = import.meta.env.VITE_BASE_VIDEO_URL as string
+export const baseLiveUrl = import.meta.env.VITE_BASE_LIVE_URL as string
+export const baseApiUrl = import.meta.env.VITE_BASE_API as string
+export const baseWSUrl = import.meta.env.VITE_BASE_WS as string
 
 export type WebSocketMessage = {
   data: string,
@@ -56,7 +60,7 @@ export function WebSocketHandle(socket: WebSocket, user: Store<"user", _UnwrapAl
     alert("您的浏览器不支持socket")
   } else {
     // 实例化socket
-    socket = new WebSocket("ws://139.9.32.27:9555/ws/" + user.$state.roomId + '/' + user.$state.username)
+    socket = new WebSocket(`${baseWSUrl}/${user.$state.roomId}/${user.$state.username}`)
     // 监听socket连接
     socket.onopen = onOpen
     // 监听socket错误信息
