@@ -1,5 +1,7 @@
 <template>
-  <h1 >当前房间号为{{user.$state.roomId}}</h1>
+    <div style="text-align: center;">
+        <h1 >当前房间号为{{user.$state.roomId}}</h1>
+    </div>
   <router-view/>
 </template>
 
@@ -10,7 +12,4 @@ const user=useUserStore()
 </script>
 
 <style scoped>
-h1{
-  margin-left: 35vw;
-}
 </style>

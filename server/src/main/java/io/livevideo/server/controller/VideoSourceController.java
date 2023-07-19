@@ -44,10 +44,13 @@ public class VideoSourceController{
 
     @RequestMapping("/getSrcFromIframeByHtml")
     public MyHttpResult getSrcFromIframeByHtml(@RequestParam("url") Optional<String> url,String type){
+        log.info("收到getSrcFromIframeByHtml请求,参数url为:{}",url.get());
         MyResult myResult = getSrcFormIframeByEndswith(url,"."+type);
         if (myResult.getResult()==false){
+            log.error("从"+url+"中获取失败,Error:"+myResult.getMsg());
             return new MyHttpResult(ResultCode.FAILURE.getCode(),(String)myResult.getMsg());
         }
+        log.info("从"+url+"中获取成功,内容为"+myResult.getData());
         return new MyHttpResult(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMsg(),myResult.getData());
     }
 

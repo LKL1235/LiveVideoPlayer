@@ -6,6 +6,7 @@ import io.livevideo.server.utils.MyHttpResult;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,12 +25,14 @@ import java.util.Optional;
  * @date:2022/12/4 20:10
  **/
 @RestController
+@CrossOrigin(origins = {"http://127.0.0.1:5173", "http://localhost:5173"},allowCredentials = "true")
 public class DirController {
     //e:\\video
     @Value("${var.filePath}")
     private String filePath;
     @Autowired
     private DirDTO dirDTO;
+
     @RequestMapping("/getFileList")
     public MyHttpResult getFileList(@RequestParam("DirName") Optional<String> DirName){
         // String path = "/src/video";
