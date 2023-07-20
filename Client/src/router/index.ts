@@ -5,6 +5,7 @@ import PlayerClient from "@/components/PlayerClient.vue"
 import TestPage from "@/components/TestPage.vue"
 import TestPage2 from "@/components/TestPage2.vue"
 import MainView from "@/views/MainView.vue"
+import VideoPlayer from "@/components/VideoPlayer.vue"
 import {useUserStore} from "@/stores/userStore";
 
 
@@ -45,7 +46,13 @@ const router = createRouter({
     {
         path:'/test2',
         name:'test2',
-        component:TestPage2
+        component:TestPage2,
+        children:[
+            {  path:'video',
+                name:'video',
+                component:VideoPlayer
+            }
+        ]
     }
   ]
 })

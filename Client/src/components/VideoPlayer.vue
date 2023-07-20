@@ -1,5 +1,5 @@
 <template>
-    <video  v-if="shouldLoad" 
+    <video 
             ref="videoPlayer" 
             autoplay 
             controls 
@@ -7,7 +7,7 @@
             @pause="$emit('pause')"
             @ended="$emit('ended')"
             class="video-js vjs-defaultskin" >
-        <source ref="sourceRef" :src="videoSrc" type="application/x-mpegURL"/>
+        <source ref="sourceRef" />
     </video>
 </template>
 
@@ -20,17 +20,35 @@ const videoPlayer: Ref = ref<HTMLElement>();
 const playerRef = ref();
 const sourceRef = ref();
 const videoSrc = ref("");
-const shouldLoad = ref(false);
 const props = defineProps({
-    options: {
+    videoOptions: {
         type: Object,
-        default: () => ({})
+        default: () => {
+            return {
+                controls: true,
+                autoplay: true,
+                preload: 'auto',
+                fluid: true,
+                // textTrackSettings: false,
+                source:[{
+                src:"",
+                // // src:"http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8",
+                // src:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+                type: ''
+                }]
+            }
+        }
     }
 })
 
 onMounted(() => {
-    playerRef.value = videojs(videoPlayer.value, props.options,()=>{console.log("callback")});
-    playerRef.value.dispose();
+    console.log("chirld mounted")
+    console.log(props.videoOptions)
+    
+    sourceRef.value.type = props.videoOptions.source[0].type;
+    sourceRef.value.src = props.videoOptions.source[0].src;
+    // videoSrc.value = "https://v8.dious.cc/20221210/1nVKudfc/1500kb/hls/index.m3u8"
+    playerRef.value = videojs(videoPlayer.value, props.videoOptions,()=>{console.log("callback")});
 // player.play();
 })
 
