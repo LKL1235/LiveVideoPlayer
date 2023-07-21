@@ -1,18 +1,23 @@
 <template>
     <div>
         <VideoPlayerVue 
+            :key="domIndex"
             @play="play" 
             @pause="pause" 
             @ended="ended"
             :video-options="videoOptions"
             ></VideoPlayerVue>
     </div>
+    <button @click="hide">hide</button>
+    <button @click="reload">reload</button>
 </template>
 
 <script setup lang="ts">
 import { onBeforeMount, onMounted, ref, type Ref } from 'vue';
 import VideoPlayerVue from './VideoPlayer.vue';
 
+const domIndex = ref(1);
+const show = ref(true);
 const videoPlayer: Ref = ref<HTMLElement>();
 const playerRef = ref();
 const controls = ref(true);
@@ -42,6 +47,15 @@ const play= () =>{
 
 const pause= () =>{}
 const ended= () =>{}
+const hide = () =>{
+    show.value = false;
+    domIndex.value = Math.random()+10;
+}
+const reload = () =>{
+    show.value = true;
+    domIndex.value = Math.random()+10;
+}
+
 
 const stop = () => {
 playerRef.value.pause();
@@ -62,7 +76,6 @@ onBeforeMount(()=>{
     type: 'application/x-mpegURL'
     }]
     }
-    
 })
 
 onMounted(() => {

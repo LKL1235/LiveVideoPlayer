@@ -135,6 +135,7 @@ public class VideoSourceController{
         }
         return new MyResult(true, url, link);
     }
+    
 
     public MyResult getUrlFromHtmlByType(WebDriver driver, String initiatorType){
         JavascriptExecutor jse = (JavascriptExecutor) driver;
@@ -150,10 +151,11 @@ public class VideoSourceController{
                 if (item.get("initiatorType").equals(initiatorType))
                 {
                     link = (String)item.get("name");
-                    log.info(link);
-                    return new MyResult(true, "从"+initiatorType+"中获取成功", link);
+                    log.info("iframe的内容: {}",link);
+                    if (link.endsWith(".m3u8")){
+                        return new MyResult(true, "从"+initiatorType+"中获取成功", link);
+                    }
                 }
-
             }catch(Exception e){
                 e.printStackTrace();
                 driver.quit();
@@ -196,14 +198,14 @@ public class VideoSourceController{
         if (isUrlNull(url)){
             return new MyResult(false, "无效URL", "");
         }
-
+        
         MyResult res = driverGet(driver, 4, url.get());
 
         if (res.getResult() == false){
             driver.quit();
             return new MyResult(false, (String)res.getData(), "");
         }
-
+        
         res = getUrlFromHtmlByType(driver, "iframe");
         if (res.getResult() == false){
             driver.quit();

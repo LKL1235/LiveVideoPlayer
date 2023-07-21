@@ -2,34 +2,32 @@
     <div style="font-size: 3vh;text-align: center;">
         当前播放:{{ filePath }}
     </div>
+    <div >
+        <el-button type="primary" style="margin-left: 75vw;" @click="send">为房间推送同步</el-button>
+    </div>
     <span style="font-size: 24px;margin-left: 5vw;margin-right: 4vw;">请输入要解析的网页</span>
-    <el-input v-model="inputUrl" 
-        placeholder="请输入视频路径" 
-        clearable
-        style="width: 50vw;margin-right: 2vw;"
-        ></el-input>
+    <el-input v-model="inputUrl" placeholder="请输入视频路径" clearable style="width: 50vw;margin-right: 2vw;"></el-input>
     <el-button type="primary" :loading="parse_loading" @click="parse">解析</el-button>
+    <el-button type="primary" :loading="addToPlayList_loading" @click="addToPlayList">添加到播放单</el-button>
     <div>
-        <video 
-        autoplay 
-        controls 
-        ref="videoRef" 
-        @pause="pause" 
-        @play="play" 
-        @ended="end" 
-        style="" height="300"
-        class="video-js vjs-defaultskin"></video>
+        <VideoPlayerVue 
+            :key="VideoPlayerKey"
+            @play="play" 
+            @pause="pause" 
+            @ended="end" 
+            :video-options="videoOptions"
+                        />
     </div>
 
     <div>
         <!-- <div> -->
-            <!-- <input type="checkbox" class="checkbox1" v-model="isLive"> -->
-            <!-- <span class="label1">是否为直播流</span> -->
-            <!-- <button class="button_load" @click="load">加载视频</button> -->
+        <!-- <input type="checkbox" class="checkbox1" v-model="isLive"> -->
+        <!-- <span class="label1">是否为直播流</span> -->
+        <!-- <button class="button_load" @click="load">加载视频</button> -->
         <!-- </div> -->
 
         <div class="div_select">
-            <select id="ldir" ref="dirList" class="select1" @change="videoChange">
+            <select id="ldir" ref="dirList" class="select1" @change="dirChange">
                 <option v-for="index in dirOption" :value="index.url" :key="index.url">{{ index.url }}
                 </option>
             </select>
@@ -37,11 +35,9 @@
                 <option v-for="index in fileOption" :value="index.url" :key="index.url">{{ index.url }}
                 </option>
             </select>
-            <button class="button_change" @click="change">选集</button>
+            <el-button type="primary" @click="change">从服务器列表播放</el-button>
         </div>
-        <div>
-            <button class="button_send" @click="send">为房间推送同步</button>
-        </div>
+
         <div>
             <textarea disabled v-model="tips" class="tips1">
       </textarea>
@@ -51,20 +47,23 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, type Ref } from "vue";
+import { onBeforeMount, onMounted, onUnmounted, ref, type Ref } from "vue";
 import { useUserStore } from "@/stores/userStore";
 import axios from "axios";
-import { createdPlayer, getMessageHost, WebSocketHandle, isNullOrUndefined, baseVideoUrl } from "@/function/VideoFunction"
+import { createdPlayer, getMessageHost,
+        WebSocketHandle, isNullOrUndefined,
+        baseVideoUrl, getVideoOption } from "@/function/VideoFunction"
 import type { WebSocketMessage } from "@/function/VideoFunction"
 import { ElMessage } from 'element-plus'
-import videojs from 'video.js';
-import 'video.js/dist/video-js.css';
+import VideoPlayerVue from './VideoPlayer.vue';
+
 
 const user = useUserStore()
 
 // 组件绑定
 const inputUrl = ref("")
 const parse_loading = ref(false)
+const addToPlayList_loading = ref(false)
 const videoRef = ref()
 const tips = ref<Array<string>>([])
 // 视频地址
@@ -73,12 +72,14 @@ const videoSrc = ref("")
 // videojs实例
 const PlayerRef = ref()
 // data
+const VideoPlayerKey = ref(Math.random()+10)
 const isLive = ref(false)
 const isPause = ref(false)
 const currentFile = ref("")
 const dirList = ref()
 const fileList = ref()
-const socketRef:Ref<WebSocket> = ref<WebSocket>() as Ref<WebSocket>
+const socketRef: Ref<WebSocket> = ref<WebSocket>() as Ref<WebSocket>
+const videoOptions = ref({})
 const fileOption = ref([
     {
         url: "mv2.mp4"
@@ -93,10 +94,12 @@ const dirOption = ref([
 // 视频控制
 const play = () => {
     isPause.value = false
+    console.log("play");
     send()
 }
 const pause = () => {
     isPause.value = true
+    console.log("pause");
     send()
 }
 const end = () => {
@@ -108,63 +111,56 @@ const end = () => {
         filePath.value = fileOption.value[index + 1].url
     }
     videoSrc.value = baseVideoUrl + filePath.value
+    console.log("end");
     send()
 }
 
-const parse = () =>{
+const parse = () => {
     parse_loading.value = true
     if (inputUrl.value == "") {
         parse_loading.value = false
         return
     }
-    // https://www.kanmtv.com/dongman/227177-1-1.html
-    if (inputUrl.value.endsWith(".html")){
-        axios.get(`/getSrcFromIframeByHtml?url=${inputUrl.value}&type=m3u8`).then((respon) => {
-            console.log(respon.data.data)
-            if (respon.data.data === "null"){
-                parse_loading.value = false
-                return
-            }
-            videoSrc.value = respon.data.data
-            let retrycount = 0
-            let noExcption = false
-            while(retrycount<4 && noExcption == false){
-                console.log("try to get video");
-                try {
-                    PlayerRef.value.src({
-                        src: videoSrc.value,
-                        type: 'application/x-mpegURL'
-                        // type: 'video/mp4'
-                    })
-                    PlayerRef.value.play()
-                    noExcption = true
-                } catch (error) {
-                    retrycount++
-                    console.log(`${error},retry ${retrycount} times`);
+    try {
+        // https://www.kanmtv.com/dongman/227177-1-1.html
+        if (inputUrl.value.endsWith(".html")) {
+            axios.get(`/getSrcFromIframeByHtml?url=${inputUrl.value}&type=m3u8`).then((respon) => {
+                console.log(respon.data.data)
+                if (respon.data.data === "null") {
+                    parse_loading.value = false
+                    return
                 }
-            }
-            // createdPlayer(videoSrc.value, videoRef, HlsRef)
+                // https://www.kanmtv.com/bofangqi/dp/dp.html?v=https://v8.dious.cc/20221210/1nVKudfc/index.m3u8
+                videoSrc.value = respon.data.data as string
+                const lastIndex = videoSrc.value.lastIndexOf("http")
+                if (lastIndex !== -1){
+                    videoSrc.value = videoSrc.value.substring(lastIndex)
+                }
+                console.log("videoSrc: " + videoSrc.value);
+                loadFromUrl()
+                parse_loading.value = false
+            }).catch(error => {
+                console.log(error)
+                parse_loading.value = false
+            })
+        } else if (inputUrl.value.endsWith(".mp4")) {
+            videoSrc.value = inputUrl.value
+            loadFromUrl()
+        } else if (inputUrl.value.endsWith(".m3u8")) {
+            videoSrc.value = inputUrl.value
+            loadFromUrl()
+        } else {
             parse_loading.value = false
-        }).catch(error => {
-            console.log(error)
-            parse_loading.value = false
-        })
-    }else if(inputUrl.value.endsWith(".mp4")){
-        videoSrc.value = inputUrl.value
-        PlayerRef.value.src({
-            src: videoSrc.value,
-            type: 'video/mp4'
-        })
-        createdPlayer(videoSrc.value, videoRef, HlsRef)
+            ElMessage.error("不支持的视频格式")
+        }
+    }catch (error:any) {
         parse_loading.value = false
-    }else if(inputUrl.value.endsWith(".m3u8")){
-        videoSrc.value = inputUrl.value
-        createdPlayer(videoSrc.value, videoRef, HlsRef)
-        parse_loading.value = false
-    }else{
-        parse_loading.value = false
-        ElMessage.error("不支持的视频格式")
+        console.log(`parse error: ${error.message}`);
+        ElMessage.error("解析失败,请输入支持的网站或重试")
     }
+}
+
+const addToPlayList = () =>{
 
 }
 
@@ -182,8 +178,16 @@ const change = () => {
 const load = () => {
     tips.value.push("\n当前播放视频为：" + filePath.value)
     videoSrc.value = baseVideoUrl + filePath.value
-    createdPlayer(videoSrc.value, videoRef, HlsRef)
+    videoOptions.value = getVideoOption(true,videoSrc.value)
+    VideoPlayerKey.value = Math.random()+10
 }
+
+const loadFromUrl = () =>{
+    tips.value.push("\n当前播放视频为：" + filePath.value)
+    videoOptions.value = getVideoOption(true,videoSrc.value)
+    VideoPlayerKey.value = Math.random()+10
+}
+
 // 初始化
 const init = () => {
     WebSocketHandle(socketRef, user, onOpen, onError, onMessage, onClose)
@@ -218,12 +222,12 @@ const onClose = () => {
 }
 
 // 视频切换
-const videoChange = () => {
+const dirChange = () => {
     currentFile.value = dirList.value.value
-    getDir(currentFile.value)
+    listDir(currentFile.value)
 }
 
-const getDir = (dir: string) => {
+const listDir = (dir: string) => {
     if ((dir != "")) {
         axios.get(`/getFileList?DirName=${dir}`).then((respon) => {
             console.log(respon.data.data)
@@ -240,31 +244,27 @@ const getDir = (dir: string) => {
         })
     }
 }
-const listDir = () => {
+const getDir = () => {
     axios.get("/getDir").then((respon) => {
         console.log(respon.data.data)
         respon.data.data.forEach((item: { url: string; }) => dirOption.value.push(item))
     }).catch(error => { console.log(error) })
     var index = dirList.value.selectedIndex
     currentFile.value = dirOption.value[index].url
-    getDir(currentFile.value)
+    listDir(currentFile.value)
 }
+
+
 onMounted(() => {
     // 初始化
     init()
-    listDir()
-    PlayerRef.value = videojs(videoRef.value, {
-        controls: true,
-        autoplay: true,
-        preload: 'auto',
-        fluid: true,
-        textTrackSettings: false,
-        sources: [{
-            src: 'http://vjs.zencdn.net/v/oceans.mp4',
-            type: 'video/mp4'
-        }]
-    });
+    getDir()
 })
+
+onUnmounted(() => {
+    socketRef.value.close()
+})
+
 </script>
 
 <style>

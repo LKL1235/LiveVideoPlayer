@@ -1,14 +1,18 @@
 <template>
-    <video 
-            ref="videoPlayer" 
-            autoplay 
-            controls 
-            @play="$emit('play')"
-            @pause="$emit('pause')"
-            @ended="$emit('ended')"
-            class="video-js vjs-defaultskin" >
-        <source ref="sourceRef" />
-    </video>
+    <div style="display: flex;justify-content: center;">
+        <video  
+                ref="videoPlayer" 
+                autoplay 
+                controls 
+                @play="$emit('play')"
+                @pause="$emit('pause')"
+                @ended="$emit('ended')"
+                class="video-js vjs-defaultskin" 
+                style="width: 55vw; height: 55vh;"
+                >
+            <source ref="sourceRef" />
+        </video>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -19,7 +23,6 @@ import { onMounted, ref,  type Ref, onUnmounted } from 'vue';
 const videoPlayer: Ref = ref<HTMLElement>();
 const playerRef = ref();
 const sourceRef = ref();
-const videoSrc = ref("");
 const props = defineProps({
     videoOptions: {
         type: Object,
@@ -41,20 +44,24 @@ const props = defineProps({
     }
 })
 
+
 onMounted(() => {
     console.log("chirld mounted")
     console.log(props.videoOptions)
-    
+    if (props.videoOptions.source != undefined && props.videoOptions.source != null){
     sourceRef.value.type = props.videoOptions.source[0].type;
     sourceRef.value.src = props.videoOptions.source[0].src;
     // videoSrc.value = "https://v8.dious.cc/20221210/1nVKudfc/1500kb/hls/index.m3u8"
-    playerRef.value = videojs(videoPlayer.value, props.videoOptions,()=>{console.log("callback")});
-// player.play();
+    playerRef.value = videojs(videoPlayer.value, props.videoOptions,()=>{console.log("callback")}); 
+    }
+
 })
+
 
 onUnmounted(() =>{
     if (playerRef.value) {
         playerRef.value.dispose();
+        console.log("chirld unmounted");
     }
 }
 )

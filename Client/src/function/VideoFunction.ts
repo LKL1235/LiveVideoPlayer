@@ -73,6 +73,26 @@ export function WebSocketHandle(socketRef: Ref<WebSocket>, user: Store<"user", _
     }
 }
 
+export function getVideoOption(controls:boolean,videoSrc:string){
+    const option = {
+        controls: controls,
+        autoplay: true,
+        preload: 'auto',
+        fluid: true,
+        // textTrackSettings: false,
+        source:[{
+        src:videoSrc,
+        // "https://v8.dious.cc/20221210/1nVKudfc/1500kb/hls/index.m3u8"
+        // // src:"http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8",
+        // src:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+        type: videoSrc.endsWith(".m3u8")?'application/x-mpegURL':'video/mp4'
+        }]
+        }
+    return option
+}
+
+
+
 export function getMessageClient(msg: WebSocketMessage, videoRef: Ref, HlsRef: Ref, tips: Ref<Array<string>>, filePath: Ref<string>) {
     const data = JSON.parse(msg.data)
     let src: string

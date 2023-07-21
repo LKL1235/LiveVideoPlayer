@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, type Ref } from "vue";
+import { onMounted, onUnmounted, ref, type Ref } from "vue";
 import { useUserStore } from "@/stores/userStore";
 import { getMessageClient, WebSocketHandle} from "@/function/VideoFunction"
 import type{WebSocketMessage} from "@/function/VideoFunction"
@@ -71,6 +71,10 @@ const onClose = () => {
 onMounted(() => {
   // 初始化
   init()
+})
+
+onUnmounted(() => {
+    socketRef.value.close()
 })
 
 </script>
