@@ -1,5 +1,5 @@
 <template>
-    <div style="display: flex;justify-content: center;">
+    <div >
         <video  
                 ref="videoPlayer" 
                 autoplay 

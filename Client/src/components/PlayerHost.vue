@@ -9,7 +9,7 @@
     <el-input v-model="inputUrl" placeholder="请输入视频路径" clearable style="width: 50vw;margin-right: 2vw;"></el-input>
     <el-button type="primary" :loading="parse_loading" @click="parse">解析</el-button>
     <el-button type="primary" :loading="addToPlayList_loading" @click="addToPlayList">添加到播放单</el-button>
-    <div>
+    <div style="display: flex;justify-content: center;">
         <VideoPlayerVue 
             :key="VideoPlayerKey"
             @play="play" 
